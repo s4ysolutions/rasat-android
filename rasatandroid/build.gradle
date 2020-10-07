@@ -1,0 +1,145 @@
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+    id 'signing'
+    id "com.jfrog.bintray" version "1.8.5"
+}
+
+ext {
+    releaseVersion = System.getenv('RELEASE_VERSION') ?: '1.0.0'
+}
+
+group 'solution.s4y.rasat'
+version releaseVersion
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "29.0.2"
+
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'solutions.s4y.rasat:rasat:1.0.0'
+
+    testImplementation 'junit:junit:4.13'
+    androidTestImplementation 'androidx.test:runner:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+}
+
+task sourceJar (type : Jar) {
+    archiveClassifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+/*
+task javadocJar (type: Jar, dependsOn: javadoc) { // (1)
+    archiveClassifier = 'javadoc'
+    from android.javadoc.destinationDir
+}
+ */
+
+publishing {
+    publications {
+        RasatAndroidPublication(MavenPublication) {
+            groupId = 'solutions.s4y.rasat'
+            artifactId = 'rasat-android'
+            version = releaseVersion
+
+            artifact("$buildDir/outputs/aar/rasatandroid-release.aar") {
+                builtBy build
+            }
+
+            artifacts {
+                archives sourceJar
+            }
+            pom {
+                packaging 'aar'
+                name = 'Rasat Android'
+                description = 'Android pub-sub java library above Rasat Java'
+                url = 'https://github.com/s4ysolutions/rasat-android'
+                licenses {
+                    license {
+                        name = 'MIT License (MIT)'
+                        url = 'https://github.com/s4ysolutions/rasat-android/blob/main/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'dsame'
+                        name = 'Sergey Dolin'
+                        email = 'sergey@s4y.solutions'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/s4ysolutions/rasat-android.git'
+                    developerConnection = 'scm:git:ssh://github.com/s4ysolutions/rasat-android.git'
+                    url = 'https://github.com/s4ysolutions/rasat-android'
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    dryRun = false
+    publish = true
+    override = true
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['RasatAndroidPublication']
+
+    pkg {
+        repo = 'maven'
+        name = 'rasat-android'
+        userOrg = 's4ysolutions'
+        description = 'Android pub-sub java library above Rasat Java'
+        publications = ['RasatAndroidPublication']
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/s4ysolutions/rasat-android.git'
+        websiteUrl = 'https://github.com/s4ysolutions/rasat-android'
+        issueTrackerUrl = 'https://github.com/s4ysolutions/rasat-android/issues'
+        githubRepo = 's4ysolutions/rasat-android'
+        githubReleaseNotesFile = 'README.md'
+        version {
+            name = releaseVersion
+            desc = 'Rasat Android v' + releaseVersion
+            released = new Date()
+            vcsTag = releaseVersion
+        }
+    }
+}
+
