@@ -6,7 +6,7 @@ plugins {
 }
 
 ext {
-    releaseVersion = System.getenv('RELEASE_VERSION') ?: '1.0.0'
+    releaseVersion = System.getenv('RELEASE_VERSION') ?: '1.0.3'
 }
 
 group 'solutions.s4y.rasat'
@@ -33,8 +33,7 @@ android {
             minifyEnabled false
         }
         release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled false
         }
     }
 
@@ -48,8 +47,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'solutions.s4y.rasat:rasat:1.0.0'
+    api 'solutions.s4y.rasat:rasat:1.0.0'
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test:runner:1.3.0'
@@ -79,41 +77,41 @@ task javadocJar (type: Jar, dependsOn: androidJavadocs) {
     from androidJavadocs.destinationDir
 }
 
-publishing {
-    publications {
-        RasatAndroidPublication(MavenPublication) {
-            groupId = 'solutions.s4y.rasat'
-            artifactId = 'rasat-android'
-            version = releaseVersion
+afterEvaluate {
+    publishing {
+        publications {
+            RasatAndroidPublication(MavenPublication) {
+                groupId = 'solutions.s4y.rasat'
+                artifactId = 'rasat-android'
+                version = releaseVersion
 
-            artifact("$buildDir/outputs/aar/rasatandroid-release.aar") {
-                builtBy build
-            }
-            artifact sourceJar
-            artifact javadocJar
+                from components.release
+                artifact sourceJar
+                artifact javadocJar
 
-            pom {
-                packaging 'aar'
-                name = 'Rasat Android'
-                description = 'Android pub-sub java library above Rasat Java'
-                url = 'https://github.com/s4ysolutions/rasat-android'
-                licenses {
-                    license {
-                        name = 'MIT License (MIT)'
-                        url = 'https://github.com/s4ysolutions/rasat-android/blob/main/LICENSE'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'dsame'
-                        name = 'Sergey Dolin'
-                        email = 'sergey@s4y.solutions'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/s4ysolutions/rasat-android.git'
-                    developerConnection = 'scm:git:ssh://github.com/s4ysolutions/rasat-android.git'
+                pom {
+                    packaging 'aar'
+                    name = 'Rasat Android'
+                    description = 'Android pub-sub java library above Rasat Java'
                     url = 'https://github.com/s4ysolutions/rasat-android'
+                    licenses {
+                        license {
+                            name = 'MIT License (MIT)'
+                            url = 'https://github.com/s4ysolutions/rasat-android/blob/main/LICENSE'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'dsame'
+                            name = 'Sergey Dolin'
+                            email = 'sergey@s4y.solutions'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/s4ysolutions/rasat-android.git'
+                        developerConnection = 'scm:git:ssh://github.com/s4ysolutions/rasat-android.git'
+                        url = 'https://github.com/s4ysolutions/rasat-android'
+                    }
                 }
             }
         }
